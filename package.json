@@ -4,7 +4,7 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "dev": "webpack --mode development ./jogging/frontend/src/index.js --output ./jogging/frontend/static/frontend/main.js",
+    "dev": "webpack --mode development --watch ./jogging/frontend/src/index.js --output ./jogging/frontend/static/frontend/main.js",
     "build": "webpack --mode production ./jogging/frontend/src/index.js --output ./jogging/frontend/static/frontend/main.js"
   },
   "keywords": [],
