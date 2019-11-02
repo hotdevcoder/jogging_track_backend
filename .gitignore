@@ -7,3 +7,6 @@ jogging/db.sqlite3
 jogging/api/__pycache__
 jogging/frontend/__pycache__
 jogging/jogging/__pycache__
+
+# ignore vs code settings
+.vscode
