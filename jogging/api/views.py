@@ -1,5 +1,9 @@
-from django.shortcuts import render
+from rest_framework import viewsets
+
+from .models import Entry
+from .serializers import EntrySerializer
 
 # Create your views here.
-def index(request):
-  return render(request, 'frontend/index.html')
+class EntryViewSet(viewsets.ModelViewSet):
+  queryset = Entry.objects.all()
+  serializer_class = EntrySerializer
