@@ -9,7 +9,7 @@ from rest_framework_simplejwt.views import (
 	TokenVerifyView
 )
 router = DefaultRouter()
-router.register(r'entry', views.EntryViewSet)
+router.register('users', views.UserViewSet)
 
 urlpatterns = [
 	path('login/', views.LoginView.as_view()),

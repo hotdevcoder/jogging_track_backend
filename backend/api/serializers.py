@@ -37,3 +37,18 @@ class UserCreateSerializer(serializers.ModelSerializer, RoleValidatorMixin):
         user.set_password(validated_data['password'])
         user.save()
         return user
+
+
+class UserUpdateSerializer(serializers.ModelSerializer, RoleValidatorMixin):
+    class Meta:
+        model = User
+        fields = ('id', 'first_name', 'last_name', 'email', 'role', 'password')
+        read_only_fields = ('id',)
+        extra_kwargs = { 'password': { 'write_only': True , 'required': False} }
+
+    def update(self, instance, validated_data):
+        user = super(UserUpdateSerializer, self).update(self.instance, validated_data)
+        if 'password' in validated_data:
+            user.set_password(validated_data['password'])
+        user.save()
+        return user
