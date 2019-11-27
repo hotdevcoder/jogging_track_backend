@@ -8,10 +8,24 @@ from datetime import date, timedelta
 from math import ceil
 
 # Create your models here.
-class Entry(models.Model):
-  distance = models.PositiveIntegerField(default = 0)
-  duration = models.PositiveIntegerField(default = 1)
-  date = models.DateField(auto_now_add = True)
+class RecordQuerySet(models.QuerySet):
+	def filter_by_user(self, user):
+		if user.is_admin:
+			return self
+		if user.is_manager:
+			return self.exclude(user__role='admin')
+		else:
+			return self.filter(user=user)
+
+class Record(models.Model):
+	user = models.ForeignKey('api.User', related_name='records', on_delete=models.CASCADE)
+	date_recorded = models.DateField(help_text='Recorded date')
+	duration = models.IntegerField(help_text='Jogging duration in seconds')
+	distance = models.FloatField(help_text='Jogging distance')
+	objects = RecordQuerySet.as_manager()
+
+	def __str__(self):
+		return '{}::{}'.format(self.user, self.date_recorded)
 
 
 ROLE_CHOICE = (
@@ -21,7 +35,7 @@ ROLE_CHOICE = (
 )
 
 class UserQuerySet(models.QuerySet):
-	def fillter_by_user(self, user):
+	def filter_by_user(self, user):
 		if user.is_admin:
 			return self.filter(role__in=  ['admin', 'manager','user'])
 		if user.is_manager:
@@ -51,6 +65,9 @@ class UserManager(BaseUserManager):
 			raise ValueError('Superuser must have is_superuser=True.')
 		return self._create_user(email, password, **extra_fields)
 
+	def get_queryset(self):
+		return UserQuerySet(self.model, using=self._db)
+
 class User(AbstractBaseUser, PermissionsMixin):
 	first_name = models.CharField(_('First Name'), max_length=50)
 	last_name = models.CharField(_('Last Name'), max_length=50)
@@ -59,6 +76,7 @@ class User(AbstractBaseUser, PermissionsMixin):
 	is_superuser = models.BooleanField(_('superuser status'), default=False)
 	is_staff = models.BooleanField(_('staff status'), default=False)
 	is_active = models.BooleanField(_('active'), default=True)
+	date_joined = models.DateTimeField(_('date joined'), auto_now_add=True)
 	USERNAME_FIELD = 'email'
 	objects = UserManager()
 
@@ -82,7 +100,7 @@ class User(AbstractBaseUser, PermissionsMixin):
 
 	def get_full_name(self):
 		return self.first_name + ' ' + self.last_name
-
+		
 	def get_report(self, date_from, date_to):
 		qs = self.records.all()
 		if date_from is not None:

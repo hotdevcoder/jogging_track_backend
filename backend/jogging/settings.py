@@ -39,6 +39,8 @@ INSTALLED_APPS = [
 	'django.contrib.sessions',
 	'django.contrib.messages',
 	'django.contrib.staticfiles',	
+	'django_extensions',
+	'corsheaders',
 	'rest_framework',
 	'api',
 ]
@@ -46,6 +48,7 @@ INSTALLED_APPS = [
 MIDDLEWARE = [
 	'django.middleware.security.SecurityMiddleware',
 	'django.contrib.sessions.middleware.SessionMiddleware',
+	'corsheaders.middleware.CorsMiddleware',
 	'django.middleware.common.CommonMiddleware',
 	'django.middleware.csrf.CsrfViewMiddleware',
 	'django.contrib.auth.middleware.AuthenticationMiddleware',
@@ -101,8 +104,8 @@ DATABASES = {
 }
 
 SIMPLE_JWT = {
-	'ACCESS_TOKEN_LIFETIME': timedelta(days=5),
-	'REFRESH_TOKEN_LIFETIME': timedelta(days=1),
+	'ACCESS_TOKEN_LIFETIME': timedelta(days=15),
+	'REFRESH_TOKEN_LIFETIME': timedelta(days=7),
 	'ROTATE_REFRESH_TOKENS': False,
 	'BLACKLIST_AFTER_ROTATION': True,
 
@@ -120,8 +123,8 @@ SIMPLE_JWT = {
 	'JTI_CLAIM': 'jti',
 
 	'SLIDING_TOKEN_REFRESH_EXP_CLAIM': 'refresh_exp',
-	'SLIDING_TOKEN_LIFETIME': timedelta(days=1),
-	'SLIDING_TOKEN_REFRESH_LIFETIME': timedelta(days=1),
+	'SLIDING_TOKEN_LIFETIME': timedelta(days=15),
+	'SLIDING_TOKEN_REFRESH_LIFETIME': timedelta(days=7),
 }
 # Password validation
 # https://docs.djangoproject.com/en/2.2/ref/settings/#auth-password-validators

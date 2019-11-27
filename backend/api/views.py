@@ -5,8 +5,8 @@ from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.decorators import action
 from django.http import JsonResponse
-from .models import Entry, User
-from .serializers import EntrySerializer, UserSerializer, UserCreateSerializer, UserUpdateSerializer
+from .models import Record, User
+from .serializers import RecordSerializer, UserSerializer, UserCreateSerializer, UserUpdateSerializer
 from rest_framework.mixins import CreateModelMixin
 from rest_framework.generics import GenericAPIView
 from rest_framework.authentication import BasicAuthentication
@@ -14,9 +14,29 @@ from rest_framework_simplejwt.authentication import JWTAuthentication
 from django.contrib.auth import authenticate
 from .permissions import IsAdminOrManager
 # Create your views here.
-class EntryViewSet(viewsets.ModelViewSet):
-	queryset = Entry.objects.all()
-	serializer_class = EntrySerializer
+class RecordViewSet(viewsets.ModelViewSet):
+	queryset = Record.objects.all().order_by('-date_recorded')
+	permission_classes = [IsAuthenticated,]
+	serializer_class = RecordSerializer
+	
+	def perform_create(self, serializer):
+		serializer.save()
+
+	def perform_update(self, serializer):
+		serializer.save()
+
+	def get_queryset(self):
+		qs = super(RecordViewSet, self).get_queryset()
+		print("query_params.get data:", self.request.query_params)
+		print("all querys: ", qs)
+		date_from = self.request.query_params.get('from', None)
+		date_to = self.request.query_params.get('to', None)
+		if date_from is not None:
+			qs = qs.filter(date_recorded__gte=date_from)
+		if date_to is not None:
+			qs = qs.filter(date_recorded__lte=date_to)
+		print("selectred querys: ")
+		return qs.filter_by_user(self.request.user)
 
 class LoginView(APIView):
 	authentication_classes = ()
@@ -25,9 +45,6 @@ class LoginView(APIView):
 		email = request.data.get('email', '')
 		password = request.data.get('password', '')
 		user = authenticate(email=email, password=password)
-
-		print (user)
-
 		if user is not None:
 			return Response("<html>Sign In Success!</html>", status=200)
 		else:
@@ -43,7 +60,7 @@ class RegisterView(CreateModelMixin, GenericAPIView):
 
 class UserViewSet(viewsets.ModelViewSet):
 	queryset = User.objects.all().order_by('-date_joined')
-	permission_classes = [IsAdminOrManager]
+	permission_classes = [IsAdminOrManager,]
 	def get_serializer_class(self):
 		if self.request.method in ['POST']:
 			return UserCreateSerializer
@@ -53,7 +70,7 @@ class UserViewSet(viewsets.ModelViewSet):
 			return UserSerializer
 	
 	def get_queryset(self):
-		qs = super(UserViewSet, self).getqueryset()
+		qs = super(UserViewSet, self).get_queryset()
 		return qs.filter_by_user(self.request.user)
 	
 	@action(detail=False, methods=['put', 'get'], permission_classes=[IsAuthenticated,], url_path='profile')
